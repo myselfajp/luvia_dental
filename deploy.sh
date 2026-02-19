@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Update nginx config path
-read -p "Enter full path to project directory: " PROJECT_PATH
+PROJECT_PATH="/home/luvia_dental"
 
 sed -i "s|/path/to/luvia|$PROJECT_PATH|g" nginx.conf
 DOMAIN="luviadental.com"

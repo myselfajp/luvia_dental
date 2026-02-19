@@ -29,30 +29,37 @@ if ! command -v certbot &> /dev/null; then
     sudo apt-get install -y certbot python3-certbot-nginx
 fi
 
-# Get SSL certificate
-# Using DNS validation because Cloudflare is proxying (HTTP validation won't work)
+# SSL setup (optional)
 echo "=========================================="
-echo "SSL Certificate Setup"
+echo "SSL Certificate Setup (Optional)"
 echo "=========================================="
-echo "Since Cloudflare is proxying your domain, we need DNS validation."
-echo "Run this command manually and follow the prompts:"
-echo ""
-echo "sudo certbot certonly --manual --preferred-challenges dns -d luviadental.com -d www.luviadental.com"
-echo ""
-echo "After getting the certificate, run:"
-echo "sudo certbot --nginx -d luviadental.com -d www.luviadental.com --non-interactive --redirect"
-echo ""
-read -p "Have you already obtained SSL certificates? (y/n) " -n 1 -r
+read -p "Do you want to set up SSL now? (y/n) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    # Certificates exist, just configure nginx
-    sudo certbot --nginx -d luviadental.com -d www.luviadental.com --non-interactive --redirect
+    # Check if certificates already exist
+    if [ -f "/etc/letsencrypt/live/luviadental.com/fullchain.pem" ]; then
+        echo "Certificates found. Configuring nginx with SSL..."
+        sudo certbot --nginx -d luviadental.com -d www.luviadental.com --non-interactive --redirect
+    else
+        echo "No certificates found. You can set up SSL later using:"
+        echo "  sudo certbot certonly --manual --preferred-challenges dns -d luviadental.com -d www.luviadental.com"
+        echo "  sudo certbot --nginx -d luviadental.com -d www.luviadental.com --non-interactive --redirect"
+        echo ""
+        echo "Skipping SSL setup for now. Site will run on HTTP."
+    fi
 else
-    echo "Please obtain certificates first using DNS validation, then run this script again."
-    exit 1
+    echo "Skipping SSL setup. Site will run on HTTP."
+    echo "To add SSL later, run:"
+    echo "  sudo certbot certonly --manual --preferred-challenges dns -d luviadental.com -d www.luviadental.com"
+    echo "  sudo certbot --nginx -d luviadental.com -d www.luviadental.com --non-interactive --redirect"
 fi
 
-# Reload nginx after SSL setup
+# Reload nginx
 sudo systemctl reload nginx
 
-echo "Deployment complete! Site should be available at https://luviadental.com"
+echo ""
+echo "=========================================="
+echo "Deployment complete!"
+echo "Site is available at: http://luviadental.com"
+echo "To add SSL later, see instructions above."
+echo "=========================================="

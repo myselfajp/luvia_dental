@@ -29,9 +29,28 @@ if ! command -v certbot &> /dev/null; then
     sudo apt-get install -y certbot python3-certbot-nginx
 fi
 
-# Get SSL certificate (certbot will automatically modify nginx config)
-# If Cloudflare is proxying, use DNS validation instead: --preferred-challenges dns
-sudo certbot --nginx -d luviadental.com -d www.luviadental.com --non-interactive --agree-tos --redirect
+# Get SSL certificate
+# Using DNS validation because Cloudflare is proxying (HTTP validation won't work)
+echo "=========================================="
+echo "SSL Certificate Setup"
+echo "=========================================="
+echo "Since Cloudflare is proxying your domain, we need DNS validation."
+echo "Run this command manually and follow the prompts:"
+echo ""
+echo "sudo certbot certonly --manual --preferred-challenges dns -d luviadental.com -d www.luviadental.com"
+echo ""
+echo "After getting the certificate, run:"
+echo "sudo certbot --nginx -d luviadental.com -d www.luviadental.com --non-interactive --redirect"
+echo ""
+read -p "Have you already obtained SSL certificates? (y/n) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Certificates exist, just configure nginx
+    sudo certbot --nginx -d luviadental.com -d www.luviadental.com --non-interactive --redirect
+else
+    echo "Please obtain certificates first using DNS validation, then run this script again."
+    exit 1
+fi
 
 # Reload nginx after SSL setup
 sudo systemctl reload nginx

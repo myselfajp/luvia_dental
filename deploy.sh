@@ -16,6 +16,10 @@ sudo rm -f /etc/nginx/sites-enabled/default
 # Test nginx config
 sudo nginx -t
 
+# Create ACME challenge directory
+sudo mkdir -p /var/www/html/.well-known/acme-challenge
+sudo chown -R www-data:www-data /var/www/html
+
 # Start/reload nginx with HTTP-only config first
 sudo systemctl restart nginx || sudo systemctl start nginx
 
@@ -26,6 +30,7 @@ if ! command -v certbot &> /dev/null; then
 fi
 
 # Get SSL certificate (certbot will automatically modify nginx config)
+# If Cloudflare is proxying, use DNS validation instead: --preferred-challenges dns
 sudo certbot --nginx -d luviadental.com -d www.luviadental.com --non-interactive --agree-tos --redirect
 
 # Reload nginx after SSL setup
